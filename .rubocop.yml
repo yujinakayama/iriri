@@ -36,3 +36,6 @@ AlignHash:
 
 Documentation:
   Enabled: false
+
+AsciiComments:
+  Enabled: false

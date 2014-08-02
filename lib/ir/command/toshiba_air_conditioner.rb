@@ -8,6 +8,14 @@ module IR
         HEAT = 3
       end
 
+      module WindSpeed
+        AUTO   = 0 # 自動
+        SILENT = 1 # しずか
+        LOWER  = 2 # 微
+        LOW    = 4 # 弱
+        HIGH   = 6 # 強
+      end
+
       TEMPERATURE_BOTTOM = 17
 
       attr_reader :bits
@@ -22,6 +30,10 @@ module IR
 
       def temperature
         TEMPERATURE_BOTTOM + read_integer(40, 4)
+      end
+
+      def wind_speed
+        read_integer(48, 3)
       end
 
       private
@@ -39,7 +51,7 @@ module IR
 
         string << " bits=<#{pretty_bits}>"
 
-        [:mode, :temperature].each do |attr|
+        [:mode, :temperature, :wind_speed].each do |attr|
           string << " #{attr}=#{send(attr).inspect}"
         end
 
