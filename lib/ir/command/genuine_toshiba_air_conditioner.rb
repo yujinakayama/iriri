@@ -21,11 +21,12 @@ module IR
 
       attr_reader :data_bits
 
-      def self.parse(bits)
-        custom_bits = bits[0, 16]
-        return nil unless custom_bits.to_i(2) == COMMAND_ID
-        data_bits = bits[16..-1]
-        new(data_bits)
+      def self.parse(data)
+        if data.custom_code == COMMAND_ID
+          new(data.data_bits)
+        else
+          nil
+        end
       end
 
       def initialize(data_bits)
@@ -33,32 +34,23 @@ module IR
       end
 
       def mode
-        read_integer(54, 2)
+        data_bits[38, 2].to_i
       end
 
       def temperature
-        TEMPERATURE_BOTTOM + read_integer(40, 4)
+        TEMPERATURE_BOTTOM + data_bits[24, 4].to_i
       end
 
       def wind_speed
-        read_integer(48, 3)
+        data_bits[32, 3].to_i
       end
 
       private
 
-      def read_integer(start, length)
-        data_bits[start, length].to_i(2)
-      end
-
-      def pretty_data_bits
-        data_bits.scan(/.{1,8}/).join(' ')
-      end
-
       def inspect
         string = "#<#{self.class.name}:#{object_id}"
-        string << " data_bits=<#{pretty_data_bits}>"
 
-        [:mode, :temperature, :wind_speed].each do |attr|
+        [:data_bits, :mode, :temperature, :wind_speed].each do |attr|
           value = begin
                     send(attr)
                   rescue => error
