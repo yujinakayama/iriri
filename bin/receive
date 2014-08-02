@@ -3,14 +3,35 @@
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'ir/io_adapter/arduino'
 require 'ir/pulse_codec/toshiba'
-require 'ir/command/genuine_toshiba_air_conditioner'
+require 'ir/command/compatible_toshiba_air_conditioner'
+require 'rainbow/ext/string'
 
-io_adapter = IR::IOAdapter::Arduino.new
+def puts_with_diff_highlight(current, previous)
+  char_pairs = current.each_char.zip(previous.each_char)
+
+  char_pairs.each do |current_char, prev_char|
+    current_char = current_char.color(:red) if current_char != prev_char
+    print current_char
+  end
+
+  puts
+end
+
+previous_command = nil
+
+io_adapter = IR::IOAdapter::Arduino.from_found_device
 io_adapter.each_received_pulse do |pulse|
-  # puts '=' * 80
-  # puts pulse.map { |signal| signal.duration }.join(',')
+  data = IR::PulseCodec::Toshiba.decode_pulse(pulse)
+  next unless data
 
-  bits = IR::PulseCodec::Toshiba.decode_pulse(pulse)
-  next unless bits
-  p IR::Command::GenuineToshibaAirConditioner.parse(bits)
+  command = IR::Command::CompatibleToshibaAirConditioner.parse(data)
+  next unless command
+
+  if previous_command
+    puts_with_diff_highlight(previous_command.data_bits.pretty, command.data_bits.pretty)
+  else
+    puts command.data_bits.pretty
+  end
+
+  previous_command = command
 end
