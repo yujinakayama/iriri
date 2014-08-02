@@ -2,6 +2,12 @@
 LineLength:
   Max: 100
 
+MethodLength:
+  Max: 15
+
+CyclomaticComplexity:
+  Max: 8
+
 AlignHash:
   # Alignment of entries using hash rocket as separator. Valid values are:
   #

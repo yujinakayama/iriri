@@ -2,11 +2,11 @@
 
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'ir/io_adapter/arduino'
+require 'ir/pulse_codec/toshiba'
 
 io_adapter = IR::IOAdapter::Arduino.new
 io_adapter.each_received_pulse do |pulse|
   puts '=' * 80
-  pulse.each do |signal|
-    puts [signal.on? ? 1 : 0, signal.duration].join("\t")
-  end
+  puts pulse.map { |signal| signal.duration }.join(',')
+  puts IR::PulseCodec::Toshiba.decode_pulse(pulse)
 end
