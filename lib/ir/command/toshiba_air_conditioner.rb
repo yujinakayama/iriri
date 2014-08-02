@@ -1,12 +1,23 @@
 module IR
   module Command
     class ToshibaAirConditioner
+      module Mode
+        AUTO = 0
+        COOL = 1
+        DRY  = 2
+        HEAT = 3
+      end
+
       TEMPERATURE_BOTTOM = 17
 
       attr_reader :bits
 
       def initialize(bits)
         @bits = bits
+      end
+
+      def mode
+        read_integer(54, 2)
       end
 
       def temperature
@@ -28,7 +39,7 @@ module IR
 
         string << " bits=<#{pretty_bits}>"
 
-        [:temperature].each do |attr|
+        [:mode, :temperature].each do |attr|
           string << " #{attr}=#{send(attr).inspect}"
         end
 
