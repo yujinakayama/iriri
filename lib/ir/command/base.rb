@@ -23,8 +23,8 @@ module IR
         fail NotImplementedError
       end
 
-      def self.use_codec?(_codec_class)
-        false
+      def self.pulse_codec
+        fail NotImplementedError
       end
 
       def parse(_data_bits)

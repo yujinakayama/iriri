@@ -10,8 +10,8 @@ module IR
         45_645
       end
 
-      def self.use_codec?(codec_class)
-        codec_class == PulseCodec::Toshiba
+      def self.pulse_codec
+        PulseCodec::Toshiba
       end
 
       def parse(data_bits)

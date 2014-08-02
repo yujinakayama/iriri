@@ -13,7 +13,7 @@ module IR
 
     def self.for_pulse_codec(codec_class)
       all.select do |command_class|
-        command_class.use_codec?(codec_class)
+        command_class.pulse_codec == codec_class
       end
     end
   end
