@@ -18,6 +18,7 @@ module IR
 
       def initialize(device = nil)
         @device = device || self.class.find_device
+        fail 'No Arduino device file is found.' unless @device
         @io = SerialPort.new(@device, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY)
       end
 
