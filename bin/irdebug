@@ -4,6 +4,7 @@ $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'ir/controller'
 require 'ir/io_adapter/arduino'
 require 'rainbow/ext/string'
+require 'diff/lcs'
 
 IR::Command.require_all
 
@@ -37,7 +38,7 @@ def debug_data
 
   controller.each_received_data do |data|
     current = data.inspect
-    puts highlight_diff(current, previous)
+    puts highlight_static_diff(current, previous)
     previous = current
   end
 end
@@ -47,7 +48,7 @@ def debug_command
 
   controller.each_received_command do |command|
     current = command.inspect
-    puts highlight_diff(current, previous)
+    puts highlight_smart_diff(current, previous)
     previous = current
   end
 end
@@ -57,7 +58,7 @@ def debug_data_bits
 
   controller.each_received_command do |command|
     current = command.data_bits.pretty
-    puts highlight_diff(current, previous)
+    puts highlight_static_diff(current, previous)
     previous = current
   end
 end
@@ -69,19 +70,39 @@ def controller
   end
 end
 
-def highlight_diff(subject, other)
+def highlight_static_diff(subject, other)
   return subject unless other
 
   char_pairs = subject.each_char.zip(other.each_char)
 
-  highlighted_subject = ''
+  positions = char_pairs.map.with_index do |(subject_char, other_char), index|
+    subject_char == other_char ? nil : index
+  end.compact
 
-  char_pairs.each do |subject_char, other_char|
-    subject_char = subject_char.color(:red) if subject_char != other_char
-    highlighted_subject << subject_char
+  highlight_positions(subject, positions)
+end
+
+def highlight_smart_diff(subject, other)
+  return subject unless other
+
+  diffs = Diff::LCS.diff(other, subject)
+
+  positions = diffs.map do |diff|
+    diff.map { |change| change.position }
+  end.flatten.uniq
+
+  highlight_positions(subject, positions)
+end
+
+def highlight_positions(string, positions)
+  highlighted_string = ''
+
+  string.each_char.with_index do |char, index|
+    char = char.color(:red) if positions.include?(index)
+    highlighted_string << char
   end
 
-  highlighted_subject
+  highlighted_string
 end
 
 run
