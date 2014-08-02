@@ -1,4 +1,5 @@
 require 'ir/signal'
+require 'ir/data'
 
 module IR
   module PulseCodec
@@ -8,6 +9,9 @@ module IR
       BIT_1_CODE = [Signal.new(true,  650), Signal.new(false, 1500)]
       PARITY_CODE = [Signal.new(true, 650), Signal.new(false, 4920)]
       END_CODE = [Signal.new(true, 650)]
+
+      BIT_ENDIAN = :big
+      CUSTOM_CODE_LENGTH = 16
 
       module_function
 
@@ -32,7 +36,7 @@ module IR
           return nil unless bits == parity_bits
           return nil unless read_and_match?(END_CODE)
           return nil unless pulse.empty?
-          bits
+          Data.new(bits, BIT_ENDIAN, CUSTOM_CODE_LENGTH)
         end
 
         def read_and_match?(signals)
