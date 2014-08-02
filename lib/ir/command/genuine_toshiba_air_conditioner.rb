@@ -21,7 +21,7 @@ module IR
 
       TEMPERATURE_BOTTOM = 17
 
-      register_inspect_attrs :mode, :temperature, :wind_speed
+      register_inspect_attrs :mode, :temperature, :wind_speed, :air_clean?
 
       def self.command_id
         61_965
@@ -41,6 +41,10 @@ module IR
 
       def wind_speed
         data_bits[32, 3].to_i
+      end
+
+      def air_clean?
+        data_bits[43, 1].to_i == 1
       end
     end
   end
