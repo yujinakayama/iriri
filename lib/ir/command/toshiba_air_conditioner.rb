@@ -52,7 +52,12 @@ module IR
         string << " bits=<#{pretty_bits}>"
 
         [:mode, :temperature, :wind_speed].each do |attr|
-          string << " #{attr}=#{send(attr).inspect}"
+          value = begin
+                    send(attr)
+                  rescue => error
+                    error
+                  end
+          string << " #{attr}=#{value.inspect}"
         end
 
         string << '>'
