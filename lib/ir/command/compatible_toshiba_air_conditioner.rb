@@ -5,7 +5,6 @@ module IR
   module Command
     class CompatibleToshibaAirConditioner < Base
       attr_accessor :temperature
-      register_inspect_attrs :temperature
 
       def self.command_id
         45_645

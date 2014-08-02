@@ -31,9 +31,6 @@ module IR
       alias_method :power?, :power
       alias_method :air_clean?, :air_clean
 
-      register_inspect_attrs :power?, :mode, :temperature, :wind_speed, :air_clean?, :payload_size,
-                             :valid?
-
       def self.command_id
         61_965
       end

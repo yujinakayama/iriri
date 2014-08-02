@@ -27,31 +27,8 @@ module IR
         false
       end
 
-      def self.register_inspect_attrs(*attrs)
-        inspect_attrs.concat(attrs)
-      end
-
-      def self.inspect_attrs
-        @inspect_attrs ||= [:data_bits]
-      end
-
       def parse(_data_bits)
         fail NotImplementedError
-      end
-
-      def inspect
-        string = "#<#{self.class.name}:#{object_id}"
-
-        self.class.inspect_attrs.each do |attr|
-          value = begin
-                    send(attr)
-                  rescue => error
-                    error
-                  end
-          string << " #{attr}=#{value.inspect}"
-        end
-
-        string << '>'
       end
     end
   end
