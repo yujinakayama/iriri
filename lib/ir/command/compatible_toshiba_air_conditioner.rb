@@ -3,7 +3,7 @@ require 'ir/pulse_codec/toshiba'
 
 module IR
   module Command
-    class GenuineToshibaAirConditioner < Base
+    class CompatibleToshibaAirConditioner < Base
       module Mode
         AUTO = 0
         COOL = 1
@@ -24,7 +24,7 @@ module IR
       register_inspect_attrs :mode, :temperature, :wind_speed
 
       def self.command_id
-        61_965
+        45_645
       end
 
       def self.use_codec?(codec_class)
@@ -36,7 +36,7 @@ module IR
       end
 
       def temperature
-        TEMPERATURE_BOTTOM + data_bits[24, 4].to_i
+        data_bits[16, 4].to_i
       end
 
       def wind_speed

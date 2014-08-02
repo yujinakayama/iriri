@@ -1,23 +1,27 @@
+require 'ir/pulse_codec/base'
 require 'ir/signal'
 require 'ir/data'
 
 module IR
   module PulseCodec
-    module Toshiba
+    class Toshiba < Base
       LEADER_CODE = [Signal.new(true, 4520), Signal.new(false, 4270)]
       BIT_0_CODE = [Signal.new(true,  650), Signal.new(false, 400)]
       BIT_1_CODE = [Signal.new(true,  650), Signal.new(false, 1500)]
       PARITY_CODE = [Signal.new(true, 650), Signal.new(false, 4920)]
       END_CODE = [Signal.new(true, 650)]
 
-      BIT_ENDIAN = :big
-      CUSTOM_CODE_LENGTH = 16
-
-      module_function
-
-      def decode_pulse(pulse)
+      def self.decode_pulse(pulse)
         decoder = Decoder.new(pulse)
         decoder.decode
+      end
+
+      def self.endian
+        :big
+      end
+
+      def self.custom_bits_length
+        16
       end
 
       class Decoder
@@ -36,7 +40,7 @@ module IR
           return nil unless bits == parity_bits
           return nil unless read_and_match?(END_CODE)
           return nil unless pulse.empty?
-          Data.new(bits, BIT_ENDIAN, CUSTOM_CODE_LENGTH)
+          Data.new(bits, Toshiba)
         end
 
         def read_and_match?(signals)

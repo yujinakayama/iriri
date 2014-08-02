@@ -2,8 +2,20 @@ require 'ir/data'
 
 module IR
   describe Data do
+    let(:codec_class) do
+      Class.new do
+        def self.endian
+          :big
+        end
+
+        def self.custom_bits_length
+          4
+        end
+      end
+    end
+
     describe '#custom_code' do
-      let(:data) { Data.new('01010101', :big, 4) }
+      let(:data) { Data.new('01010101', codec_class) }
 
       it 'returns an integer by interpreting the custom bits' do
         expect(data.custom_code).to eq(5)
@@ -11,12 +23,10 @@ module IR
     end
 
     describe '#custom_bits' do
-      let(:data) { Data.new('01000101', :big, custom_bits_length) }
+      let(:data) { Data.new('01000101', codec_class) }
 
       context 'when the custom bits length is 4' do
-        let(:custom_bits_length) { 4 }
-
-        it 'returns the first 8 bits' do
+        it 'returns the first 4 bits' do
           expect(data.custom_bits.to_s).to eq('0100')
         end
 
@@ -34,11 +44,9 @@ module IR
     end
 
     describe '#data_bits' do
-      let(:data) { Data.new('0100010101110010', :big, custom_bits_length) }
+      let(:data) { Data.new('0100010101110010', codec_class) }
 
       context 'when the custom bits length is 4' do
-        let(:custom_bits_length) { 4 }
-
         it 'returns bits after the first 4 bits' do
           expect(data.data_bits.to_s).to eq('010101110010')
         end

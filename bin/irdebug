@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
+require 'ir/controller'
+require 'ir/io_adapter/arduino'
+require 'rainbow/ext/string'
+
+IR::Command.require_all
+
+def run
+  case ARGV.first
+  when 'pulse'
+    debug_pulse
+  when 'data'
+    debug_data
+  when 'command'
+    debug_command
+  when 'data_bits'
+    debug_data_bits
+  else
+    warn 'Specify debug mode: pulse, data, command or data_bits.'
+  end
+end
+
+def debug_pulse
+  controller.each_received_pulse do |pulse|
+    pulse.each do |signal|
+      puts [signal.on? ? 1 : 0, signal.duration].join("\t")
+    end
+
+    puts '=' * 80
+  end
+end
+
+def debug_data
+  previous = nil
+
+  controller.each_received_data do |data|
+    current = data.inspect
+    puts highlight_diff(current, previous)
+    previous = current
+  end
+end
+
+def debug_command
+  previous = nil
+
+  controller.each_received_command do |command|
+    current = command.inspect
+    puts highlight_diff(current, previous)
+    previous = current
+  end
+end
+
+def debug_data_bits
+  previous = nil
+
+  controller.each_received_command do |command|
+    current = command.data_bits.pretty
+    puts highlight_diff(current, previous)
+    previous = current
+  end
+end
+
+def controller
+  @controller ||= begin
+    io_adapter = IR::IOAdapter::Arduino.from_found_device
+    IR::Controller.new(io_adapter)
+  end
+end
+
+def highlight_diff(subject, other)
+  return subject unless other
+
+  char_pairs = subject.each_char.zip(other.each_char)
+
+  highlighted_subject = ''
+
+  char_pairs.each do |subject_char, other_char|
+    subject_char = subject_char.color(:red) if subject_char != other_char
+    highlighted_subject << subject_char
+  end
+
+  highlighted_subject
+end
+
+run

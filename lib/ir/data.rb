@@ -2,11 +2,15 @@ require 'ir/bits'
 
 module IR
   class Data < Bits
-    attr_reader :custom_bits_length
+    attr_reader :codec
 
-    def initialize(string, endian, custom_bits_length)
-      super(string, endian)
-      @custom_bits_length = custom_bits_length
+    def initialize(string, codec)
+      super(string, codec.endian)
+      @codec = codec
+    end
+
+    def custom_bits_length
+      codec.custom_bits_length
     end
 
     def custom_code
@@ -21,6 +25,10 @@ module IR
     def data_bits
       code = string[custom_bits_length..-1]
       Bits.new(code, endian)
+    end
+
+    def inspect
+      "#<#{self.class.name}:#{object_id} [#{pretty}] codec=#{codec}>"
     end
   end
 end
