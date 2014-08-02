@@ -3,6 +3,11 @@ require 'ir/pulse_codec/toshiba'
 
 module IR
   module Command
+    # 00000011 11111100 00000001 01110100 00000000 00010000 01100101
+    #     ^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^     ^^^   ^^    ^     ^^^^^^^^
+    #      |    parity      ?    temp      |   mode   |         |
+    # payload size                     wind speed  air clean    |
+    #                                           xor of 3rd, 4th, 5th and 6th bytes
     class GenuineToshibaAirConditioner < Base
       module Mode
         AUTO = 0
@@ -21,7 +26,7 @@ module IR
 
       TEMPERATURE_BOTTOM = 17
 
-      register_inspect_attrs :mode, :temperature, :wind_speed, :air_clean?
+      register_inspect_attrs :mode, :temperature, :wind_speed, :air_clean?, :payload_size, :valid?
 
       def self.command_id
         61_965
@@ -45,6 +50,29 @@ module IR
 
       def air_clean?
         data_bits[43, 1].to_i == 1
+      end
+
+      def valid?
+        target_bytes = (2..(payload_size + 2)).map do |index|
+          data_bits[index * 8, 8].to_i
+        end
+
+        xor_sum = target_bytes.reduce(0) do |sum, byte|
+          sum ^ byte
+        end
+
+        xor_sum == checksum
+      end
+
+      private
+
+      def payload_size
+        data_bits[4, 4].to_i
+      end
+
+      def checksum
+        checksum_index = (3 + payload_size) * 8
+        data_bits[checksum_index, 8].to_i
       end
     end
   end
