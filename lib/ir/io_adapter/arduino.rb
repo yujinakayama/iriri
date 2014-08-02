@@ -10,19 +10,30 @@ module IR
       STOP_BITS = 1
       PARITY = SerialPort::NONE
 
+      def self.from_found_device
+        device = find_device
+        fail 'No Arduino device file is found.' unless device
+        from_device(device)
+      end
+
+      def self.from_device(device)
+        io = SerialPort.new(device, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY)
+        new(io)
+      end
+
       def self.find_device
         Dir.glob('/dev/cu.usbmodem*').first
       end
 
-      attr_reader :device, :io
+      attr_reader :io
 
-      def initialize(device = nil)
-        @device = device || self.class.find_device
-        fail 'No Arduino device file is found.' unless @device
-        @io = SerialPort.new(@device, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY)
+      def initialize(io)
+        @io = io
       end
 
       def each_received_pulse
+        return to_enum(__method__) unless block_given?
+
         io.each_line do |line|
           durations = line.chomp.split(',').map { |string| string.to_i * DURATION_UNIT_MICROS }
 
