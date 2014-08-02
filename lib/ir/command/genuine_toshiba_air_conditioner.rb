@@ -22,9 +22,14 @@ module IR
         LOWER  = 2 # 微
         LOW    = 4 # 弱
         HIGH   = 6 # 強
+        RANGE = AUTO..HIGH
       end
 
-      TEMPERATURE_BOTTOM = 17
+      TEMPERATURE_RANGE = 17..30
+
+      attr_accessor :power, :mode, :temperature, :wind_speed, :air_clean
+      alias_method :power?, :power
+      alias_method :air_clean?, :air_clean
 
       register_inspect_attrs :power?, :mode, :temperature, :wind_speed, :air_clean?, :payload_size,
                              :valid?
@@ -37,63 +42,79 @@ module IR
         codec_class == PulseCodec::Toshiba
       end
 
-      def power?
-        data_bits[37, 1].to_i == 0
+      def parse(data_bits)
+        fail "Invalid data bits: #{data_bits}" if Validator.valid?(data_bits)
+
+        self.power = (data_bits[37, 1].to_i == 0)
+        self.mode = data_bits[38, 2].to_i
+        self.temperature = TEMPERATURE_RANGE.begin + data_bits[24, 4].to_i
+        self.wind_speed = data_bits[32, 3].to_i
+        self.air_clean = (data_bits[43, 1].to_i == 1)
       end
 
-      def mode
-        data_bits[38, 2].to_i
+      def temperature=(integer)
+        unless TEMPERATURE_RANGE.include?(integer)
+          fail ArgumentError, "Temperature must be within #{TEMPERATURE_RANGE}."
+        end
+        @temperature = integer
       end
 
-      def temperature
-        TEMPERATURE_BOTTOM + data_bits[24, 4].to_i
+      def wind_speed=(integer)
+        unless WindSpeed::RANGE.include?(integer)
+          fail ArgumentError, "Wind speed must be within #{WindSpeed::RANGE}."
+        end
+        @wind_speed = integer
       end
 
-      def wind_speed
-        data_bits[32, 3].to_i
-      end
+      class Validator
+        attr_reader :data_bits
 
-      def air_clean?
-        data_bits[43, 1].to_i == 1
-      end
-
-      def valid?
-        parity_match? && checksum_match?
-      end
-
-      private
-
-      def payload_size
-        data_bits[4, 4].to_i
-      end
-
-      def header_bits
-        data_bits[0, 8]
-      end
-
-      def parity_bits
-        data_bits[8, 8]
-      end
-
-      def parity_match?
-        header_bits.to_s == parity_bits.to_s.tr('01', '10')
-      end
-
-      def checksum
-        checksum_index = (3 + payload_size) * 8
-        data_bits[checksum_index, 8].to_i
-      end
-
-      def checksum_match?
-        target_bytes = (2..(payload_size + 2)).map do |index|
-          data_bits[index * 8, 8].to_i
+        def valid?(data_bits)
+          new(data_bits).valid?
         end
 
-        xor_sum = target_bytes.reduce(0) do |sum, byte|
-          sum ^ byte
+        def initialize(data_bits)
+          @data_bits = data_bits
         end
 
-        xor_sum == checksum
+        def valid?
+          parity_match? && checksum_match?
+        end
+
+        private
+
+        def payload_size
+          data_bits[4, 4].to_i
+        end
+
+        def header_bits
+          data_bits[0, 8]
+        end
+
+        def parity_bits
+          data_bits[8, 8]
+        end
+
+        def parity_match?
+          header_bits.to_s == parity_bits.to_s.tr('01', '10')
+        end
+
+        def checksum
+          checksum_index = (3 + payload_size) * 8
+          data_bits[checksum_index, 8].to_i
+        end
+
+        def checksum_match?
+          target_bytes = (2..(payload_size + 2)).map do |index|
+            data_bits[index * 8, 8].to_i
+          end
+
+          xor_sum = target_bytes.reduce(0) do |sum, byte|
+            sum ^ byte
+          end
+
+          xor_sum == checksum
+        end
       end
     end
   end

@@ -11,7 +11,9 @@ module IR
 
       def self.parse(data)
         if data.custom_code == command_id
-          new(data.data_bits)
+          new.tap do |command|
+            command.parse(data.data_bits)
+          end
         else
           nil
         end
@@ -33,8 +35,8 @@ module IR
         @inspect_attrs ||= [:data_bits]
       end
 
-      def initialize(data_bits)
-        @data_bits = data_bits
+      def parse(_data_bits)
+        fail NotImplementedError
       end
 
       def inspect
