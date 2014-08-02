@@ -1,6 +1,8 @@
+require 'ir/command/base'
+
 module IR
   module Command
-    class GenuineToshibaAirConditioner
+    class GenuineToshibaAirConditioner < Base
       module Mode
         AUTO = 0
         COOL = 1
@@ -16,21 +18,12 @@ module IR
         HIGH   = 6 # 強
       end
 
-      COMMAND_ID = 61_965
       TEMPERATURE_BOTTOM = 17
 
-      attr_reader :data_bits
+      register_inspect_attrs :mode, :temperature, :wind_speed
 
-      def self.parse(data)
-        if data.custom_code == COMMAND_ID
-          new(data.data_bits)
-        else
-          nil
-        end
-      end
-
-      def initialize(data_bits)
-        @data_bits = data_bits
+      def self.command_id
+        61_965
       end
 
       def mode
@@ -43,23 +36,6 @@ module IR
 
       def wind_speed
         data_bits[32, 3].to_i
-      end
-
-      private
-
-      def inspect
-        string = "#<#{self.class.name}:#{object_id}"
-
-        [:data_bits, :mode, :temperature, :wind_speed].each do |attr|
-          value = begin
-                    send(attr)
-                  rescue => error
-                    error
-                  end
-          string << " #{attr}=#{value.inspect}"
-        end
-
-        string << '>'
       end
     end
   end
