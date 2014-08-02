@@ -13,7 +13,7 @@ module IR
         fail ArgumentError, "Bit endian must be either #{ENDIANS.join(' or ')}."
       end
 
-      @string = string
+      @string = string.freeze
       @endian = endian
     end
 
@@ -23,7 +23,7 @@ module IR
     end
 
     def to_s
-      @string
+      @string.dup
     end
 
     def to_i
@@ -34,9 +34,12 @@ module IR
       end
     end
 
+    def pretty
+      string.scan(/.{1,8}/).join(' ')
+    end
+
     def inspect
-      pretty_bits = string.scan(/.{1,8}/).join(' ')
-      "#<#{self.class.name}:#{object_id} [#{pretty_bits}] endian=#{endian.inspect}>"
+      "#<#{self.class.name}:#{object_id} [#{pretty}] endian=#{endian.inspect}>"
     end
   end
 end

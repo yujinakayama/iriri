@@ -34,6 +34,28 @@ module IR
       end
     end
 
+    describe '#string' do
+      let(:bits) { Bits.new('01000101', :big) }
+
+      it 'is frozen' do
+        expect(bits.string).to be_frozen
+      end
+    end
+
+    describe '#to_s' do
+      let(:bits) { Bits.new('01000101', :big) }
+
+      it 'returns duplicate of the bit string' do
+        string = bits.to_s
+        string[0, 2] = 'foo'
+        expect(bits.string).not_to eq(string)
+      end
+
+      it 'is not frozen' do
+        expect(bits.to_s).not_to be_frozen
+      end
+    end
+
     describe '#to_i' do
       let(:bits) { Bits.new('01000101', endian) }
 
@@ -51,6 +73,14 @@ module IR
         it 'returns an integer by interpreting the bits with big-endian' do
           expect(bits.to_i).to eq(2 + 32 + 128)
         end
+      end
+    end
+
+    describe '#pretty' do
+      let(:bits) { Bits.new('0100010110111100', :big) }
+
+      it 'returns a string with 8-bit interval whitespaces' do
+        expect(bits.pretty).to eq('01000101 10111100')
       end
     end
 
