@@ -58,6 +58,33 @@ module IR
       end
 
       def valid?
+        parity_match? && checksum_match?
+      end
+
+      private
+
+      def payload_size
+        data_bits[4, 4].to_i
+      end
+
+      def header_bits
+        data_bits[0, 8]
+      end
+
+      def parity_bits
+        data_bits[8, 8]
+      end
+
+      def parity_match?
+        header_bits.to_s == parity_bits.to_s.tr('01', '10')
+      end
+
+      def checksum
+        checksum_index = (3 + payload_size) * 8
+        data_bits[checksum_index, 8].to_i
+      end
+
+      def checksum_match?
         target_bytes = (2..(payload_size + 2)).map do |index|
           data_bits[index * 8, 8].to_i
         end
@@ -67,17 +94,6 @@ module IR
         end
 
         xor_sum == checksum
-      end
-
-      private
-
-      def payload_size
-        data_bits[4, 4].to_i
-      end
-
-      def checksum
-        checksum_index = (3 + payload_size) * 8
-        data_bits[checksum_index, 8].to_i
       end
     end
   end
