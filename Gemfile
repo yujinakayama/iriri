@@ -5,5 +5,7 @@ gem 'diff-lcs', '~> 1.2'
 gem 'rainbow', '~> 2.0'
 
 group :development do
+  gem 'rake', '~> 10.3'
   gem 'rspec', '~> 3.0'
+  gem 'rubocop', '~> 0.24'
 end
