@@ -3,13 +3,14 @@
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'ir/io_adapter/arduino'
 require 'ir/pulse_codec/toshiba'
-require 'ir/command/toshiba_air_conditioner'
+require 'ir/command/genuine_toshiba_air_conditioner'
 
 io_adapter = IR::IOAdapter::Arduino.new
 io_adapter.each_received_pulse do |pulse|
-  puts '=' * 80
-  puts pulse.map { |signal| signal.duration }.join(',')
+  # puts '=' * 80
+  # puts pulse.map { |signal| signal.duration }.join(',')
 
   bits = IR::PulseCodec::Toshiba.decode_pulse(pulse)
-  p IR::Command::ToshibaAirConditioner.new(bits) if bits
+  next unless bits
+  p IR::Command::GenuineToshibaAirConditioner.parse(bits)
 end
