@@ -34,6 +34,11 @@ module IR
       end
     end
 
+    def invert
+      inverted_string = string.tr('01', '10')
+      self.class.new(inverted_string, endian)
+    end
+
     def pretty
       string.scan(/.{1,8}/).join(' ')
     end

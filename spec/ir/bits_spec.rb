@@ -76,6 +76,14 @@ module IR
       end
     end
 
+    describe '#invert' do
+      let(:bits) { Bits.new('01000101', :big) }
+
+      it 'returns a bit-inverted instance' do
+        expect(bits.invert.to_s).to eq('10111010')
+      end
+    end
+
     describe '#pretty' do
       let(:bits) { Bits.new('0100010110111100', :big) }
 
