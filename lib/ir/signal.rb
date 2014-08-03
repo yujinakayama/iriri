@@ -1,6 +1,6 @@
 module IR
   class Signal
-    DURATION_MARGIN_OF_ERROR = 0.2
+    DURATION_MARGIN_OF_ERROR = 0.4
 
     attr_reader :on, :duration
     alias_method :on?, :on
