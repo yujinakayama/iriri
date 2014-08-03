@@ -25,7 +25,7 @@ void read_signal_from_serial(unsigned int buffer[]) {
   int currentInteger = 0;
 
   while (true) {
-    while (Serial.available()); // Wait until any data is avaiable
+    while (!Serial.available()); // Wait until any data is avaiable
 
     int readByte = Serial.read();
 
@@ -37,7 +37,7 @@ void read_signal_from_serial(unsigned int buffer[]) {
       currentInteger = 0;
       index++;
 
-      if (readByte == '\n') {
+      if (readByte == '\r') {
         buffer[index] = 0; // Mark end of signal
         break;
       }
@@ -63,7 +63,7 @@ void send_ir(unsigned int buffer[]) {
         delayMicroseconds(8);
       }
     } else {
-      while (micros() - startMicros < durationMicros);
+      while (micros() - startMicros < durationMicros) {};
     }
   }
 }
