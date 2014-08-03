@@ -27,6 +27,10 @@ module IR
       Bits.new(code, endian)
     end
 
+    def to_pulse
+      codec.encode_data(self)
+    end
+
     def inspect
       "#<#{self.class.name}:#{object_id} [#{pretty}] codec=#{codec}>"
     end

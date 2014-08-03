@@ -39,6 +39,14 @@ module IR
         PulseCodec::Toshiba
       end
 
+      def initialize
+        self.power = false
+        self.mode = Mode::AUTO
+        self.temperature = (TEMPERATURE_RANGE.begin + TEMPERATURE_RANGE.end) / 2
+        self.wind_speed = WindSpeed::AUTO
+        self.air_clean = true
+      end
+
       def parse(data_bits)
         fail "Invalid data bits: #{data_bits}" unless Validator.valid?(data_bits)
 
@@ -72,7 +80,7 @@ module IR
 
       private
 
-      def generate_data_bits
+      def generate_data_bits # rubocop:disable MethodLength
         bits = Bits.new('', pulse_codec.endian)
         header_bits = Bits.new('00000011', bits.endian)
         bits << (header_bits + header_bits.invert)

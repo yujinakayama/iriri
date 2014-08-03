@@ -11,17 +11,35 @@ module IR
       PARITY_CODE = [Signal.new(true, 650), Signal.new(false, 4920)]
       END_CODE = [Signal.new(true, 650)]
 
-      def self.decode_pulse(pulse)
-        decoder = Decoder.new(pulse)
-        decoder.decode
-      end
-
       def self.endian
         :big
       end
 
       def self.custom_bits_length
         16
+      end
+
+      def self.decode_pulse(pulse)
+        decoder = Decoder.new(pulse)
+        decoder.decode
+      end
+
+      def self.encode_data(data)
+        body = data.each_bit.map do |bit|
+          case bit
+          when '1' then BIT_1_CODE
+          when '0' then BIT_0_CODE
+          end
+        end.flatten
+
+        pulse = []
+        pulse.concat(LEADER_CODE)
+        pulse.concat(body)
+        pulse.concat(PARITY_CODE)
+        pulse.concat(LEADER_CODE)
+        pulse.concat(body)
+        pulse.concat(END_CODE)
+        pulse
       end
 
       class Decoder

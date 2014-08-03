@@ -11,7 +11,7 @@ module IR
         fail NotImplementedError
       end
 
-      def self.encode_bits(_bits)
+      def self.encode_data(_bits)
         fail NotImplementedError
       end
 

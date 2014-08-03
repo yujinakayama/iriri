@@ -17,6 +17,11 @@ module IR
       @endian = endian
     end
 
+    def each_bit(&block)
+      return to_enum(__method__) unless block_given?
+      string.each_char(&block)
+    end
+
     def [](*args)
       substring = string[*args]
       Bits.new(substring, endian)
@@ -48,7 +53,7 @@ module IR
     end
 
     def to_s
-      @string.dup
+      string.dup
     end
 
     def to_i

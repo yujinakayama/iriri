@@ -35,5 +35,10 @@ module IR
         end
       end
     end
+
+    def send_command(command)
+      pulse = command.to_data.to_pulse
+      io_adapter.send_pulse(pulse)
+    end
   end
 end
