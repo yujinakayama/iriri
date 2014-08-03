@@ -54,6 +54,10 @@ boolean read_signal_from_serial(unsigned int buffer[]) {
       hasReadDigit = false;
       index++;
 
+      if (index >= kBufferMax) {
+        return false;
+      }
+
       if (readByte == '\r') {
         buffer[index] = 0; // Mark end of pulse
         break;
