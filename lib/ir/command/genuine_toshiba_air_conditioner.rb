@@ -40,7 +40,7 @@ module IR
       end
 
       def parse(data_bits)
-        fail "Invalid data bits: #{data_bits}" if Validator.valid?(data_bits)
+        fail "Invalid data bits: #{data_bits}" unless Validator.valid?(data_bits)
 
         self.power = (data_bits[37, 1].to_i == 0)
         self.mode = data_bits[38, 2].to_i
@@ -66,7 +66,7 @@ module IR
       class Validator
         attr_reader :data_bits
 
-        def valid?(data_bits)
+        def self.valid?(data_bits)
           new(data_bits).valid?
         end
 
