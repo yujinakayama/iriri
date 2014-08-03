@@ -5,6 +5,7 @@ const int kBufferMax = 1024;
 const unsigned long kPulseEndThresholdMicros = 100000;
 
 void setup() {
+  pinMode(kIRLEDPin, OUTPUT);
   pinMode(kSensorPin, INPUT);
   pinMode(kIndicatorLEDPin, OUTPUT);
   Serial.begin(9600);
