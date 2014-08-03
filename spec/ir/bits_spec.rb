@@ -70,7 +70,7 @@ module IR
       context 'when the bits is little-endian' do
         let(:endian) { :little }
 
-        it 'returns an integer by interpreting the bits with big-endian' do
+        it 'returns an integer by interpreting the bits with little-endian' do
           expect(bits.to_i).to eq(2 + 32 + 128)
         end
       end
