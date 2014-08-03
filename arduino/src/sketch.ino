@@ -25,8 +25,9 @@ void loop() {
 }
 
 boolean read_signal_from_serial(unsigned int buffer[]) {
-  int index = 0;
   int currentInteger = 0;
+  boolean hasReadDigit = false;
+  int index = 0;
   unsigned long startMicros = micros();
 
   while (true) {
@@ -41,13 +42,20 @@ boolean read_signal_from_serial(unsigned int buffer[]) {
     if ('0' <= readByte && readByte <= '9') {
       int readInteger = readByte - '0';
       currentInteger = (currentInteger * 10) + readInteger;
+      hasReadDigit = true;
+    } else if (!hasReadDigit) {
+      return false;
+    } else if (readByte != ',' && readByte != '\r') {
+      return false;
     } else {
       buffer[index] = currentInteger;
+
       currentInteger = 0;
+      hasReadDigit = false;
       index++;
 
       if (readByte == '\r') {
-        buffer[index] = 0; // Mark end of signal
+        buffer[index] = 0; // Mark end of pulse
         break;
       }
     }
