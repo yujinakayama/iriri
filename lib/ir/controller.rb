@@ -19,7 +19,7 @@ module IR
 
       io_adapter.each_received_pulse do |pulse|
         PulseCodec.all.each do |codec_class|
-          data = codec_class.decode_pulse(pulse)
+          data = codec_class.decode_pulse(pulse.dup)
           yield data if data
         end
       end
