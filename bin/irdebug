@@ -10,6 +10,8 @@ IR::Command.require_all
 
 def run
   case ARGV.first
+  when 'io'
+    debug_io
   when 'pulse'
     debug_pulse
   when 'data'
@@ -19,7 +21,13 @@ def run
   when 'data_bits'
     debug_data_bits
   else
-    warn 'Specify debug mode: pulse, data, command or data_bits.'
+    warn 'Specify debug mode: io, pulse, data, command or data_bits.'
+  end
+end
+
+def debug_io
+  controller.io_adapter.io.each_line do |line|
+    print line
   end
 end
 
