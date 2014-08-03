@@ -65,8 +65,8 @@ end
 def debug_data_bits
   previous = nil
 
-  controller.each_received_command do |command|
-    current = command.data_bits.pretty
+  controller.each_received_data do |data|
+    current = data.data_bits.pretty
     puts highlight_static_diff(current, previous)
     previous = current
   end
