@@ -22,6 +22,10 @@ module IR
       self.class.new(substring, endian)
     end
 
+    def <<(other)
+      @string = (string + other.to_s).freeze
+    end
+
     def to_s
       @string.dup
     end
