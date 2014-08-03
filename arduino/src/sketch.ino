@@ -3,6 +3,7 @@ const int kSensorPin = 8;
 const int kIndicatorLEDPin = 9;
 const int kBufferMax = 1024;
 const unsigned long kPulseEndThresholdMicros = 100000;
+const unsigned long kSerialReadTimeoutMicros = 1000000;
 
 void setup() {
   pinMode(kIRLEDPin, OUTPUT);
@@ -14,19 +15,26 @@ void setup() {
 void loop() {
   if (Serial.available()) {
     unsigned int buffer[kBufferMax] = {};
-    read_signal_from_serial(buffer);
-    send_ir(buffer);
+    boolean hasRead = read_signal_from_serial(buffer);
+    if (hasRead) {
+      send_ir(buffer);
+    }
   } else {
     receive_ir();
   }
 }
 
-void read_signal_from_serial(unsigned int buffer[]) {
+boolean read_signal_from_serial(unsigned int buffer[]) {
   int index = 0;
   int currentInteger = 0;
+  unsigned long startMicros = micros();
 
   while (true) {
-    while (!Serial.available()); // Wait until any data is avaiable
+    while (!Serial.available()) {
+      if (micros() - startMicros > kSerialReadTimeoutMicros) {
+        return false;
+      }
+    }
 
     int readByte = Serial.read();
 
@@ -44,6 +52,8 @@ void read_signal_from_serial(unsigned int buffer[]) {
       }
     }
   }
+
+  return true;
 }
 
 void send_ir(unsigned int buffer[]) {
