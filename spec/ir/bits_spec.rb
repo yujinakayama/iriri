@@ -34,6 +34,36 @@ module IR
       end
     end
 
+    describe '#append_integer' do
+      let(:bits) { Bits.new('0101', endian) }
+
+      context 'when the bits is big-endian' do
+        let(:endian) { :big }
+
+        it 'appends the passed integer with big-endian' do
+          bits.append_integer(1, 3)
+          expect(bits.to_s).to eq('0101001')
+        end
+      end
+
+      context 'when the bits is little-endian' do
+        let(:endian) { :little }
+
+        it 'appends the passed integer with little-endian' do
+          bits.append_integer(1, 3)
+          expect(bits.to_s).to eq('0101100')
+        end
+      end
+
+      context 'when the passed integer overflows than the passed bit length' do
+        let(:endian) { :big }
+
+        it 'raises ArgumentError' do
+          expect { bits.append_integer(4, 2) }.to raise_error(ArgumentError)
+        end
+      end
+    end
+
     describe '#string' do
       let(:bits) { Bits.new('01000101', :big) }
 

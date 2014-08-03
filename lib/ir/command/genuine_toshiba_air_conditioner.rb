@@ -5,7 +5,7 @@ module IR
   module Command
     # 00000011 11111100 00000001 01110100 00000000 00010000 01100101
     #     ^^^^ ^^^^^^^^ ^^^^^^^^ ^^^^     ^^^  ^^^    ^     ^^^^^^^^
-    #      |    parity      ?    temp      |    |     |     checksum
+    #      |    parity   timer?  temp      |    |     |     checksum
     # payload size                   wind speed |  air clean
     #                                       power/mode
     class GenuineToshibaAirConditioner < Base
@@ -49,6 +49,13 @@ module IR
         self.air_clean = (data_bits[43, 1].to_i == 1)
       end
 
+      def to_data
+        data = Data.new('', pulse_codec)
+        data.append_integer(self.class.command_id, pulse_codec.custom_bits_length)
+        data << generate_data_bits
+        data
+      end
+
       def temperature=(integer)
         unless TEMPERATURE_RANGE.include?(integer)
           fail ArgumentError, "Temperature must be within #{TEMPERATURE_RANGE}."
@@ -63,11 +70,48 @@ module IR
         @wind_speed = integer
       end
 
+      private
+
+      def generate_data_bits
+        bits = Bits.new('', pulse_codec.endian)
+        header_bits = Bits.new('00000011', bits.endian)
+        bits << (header_bits + header_bits.invert)
+        bits << '00000001'
+        bits.append_integer(temperature - TEMPERATURE_RANGE.begin, 4)
+        bits << '0000'
+        bits.append_integer(wind_speed, 3)
+        bits << '00'
+        bits << (power ? '0' : '1')
+        bits.append_integer(mode, 2)
+        bits << '000'
+        bits << (air_clean ? '1' : '0')
+        bits << '0000'
+        checksum = Validator.compute_checksum(bits)
+        bits.append_integer(checksum, 8)
+        bits
+      end
+
       class Validator
         attr_reader :data_bits
 
         def self.valid?(data_bits)
           new(data_bits).valid?
+        end
+
+        def self.compute_checksum(data_bits)
+          target_byte_indices = 2..(payload_length(data_bits) + 2)
+
+          target_bytes = target_byte_indices.map do |index|
+            data_bits[index * 8, 8].to_i
+          end
+
+          target_bytes.reduce(0) do |sum, byte|
+            sum ^ byte
+          end
+        end
+
+        def self.payload_length(data_bits)
+          data_bits[4, 4].to_i
         end
 
         def initialize(data_bits)
@@ -80,8 +124,8 @@ module IR
 
         private
 
-        def payload_size
-          data_bits[4, 4].to_i
+        def payload_length
+          self.class.payload_length(data_bits)
         end
 
         def header_bits
@@ -97,20 +141,12 @@ module IR
         end
 
         def checksum
-          checksum_index = (3 + payload_size) * 8
+          checksum_index = (3 + payload_length) * 8
           data_bits[checksum_index, 8].to_i
         end
 
         def checksum_match?
-          target_bytes = (2..(payload_size + 2)).map do |index|
-            data_bits[index * 8, 8].to_i
-          end
-
-          xor_sum = target_bytes.reduce(0) do |sum, byte|
-            sum ^ byte
-          end
-
-          xor_sum == checksum
+          self.class.compute_checksum(data_bits) == checksum
         end
       end
     end

@@ -13,17 +13,38 @@ module IR
         fail ArgumentError, "Bit endian must be either #{ENDIANS.join(' or ')}."
       end
 
-      @string = string.freeze
+      @string = string.dup.freeze
       @endian = endian
     end
 
     def [](*args)
       substring = string[*args]
-      self.class.new(substring, endian)
+      Bits.new(substring, endian)
     end
 
     def <<(other)
       @string = (string + other.to_s).freeze
+      self
+    end
+
+    def +(other)
+      dup << other
+    end
+
+    def append_integer(integer, bit_length)
+      binary = integer.to_s(2)
+
+      if binary.length > bit_length
+        fail ArgumentError, "#{integer} overflows with #{bit_length} bit length."
+      end
+
+      if endian == :big
+        binary = '0' * (bit_length - binary.length) + binary
+      else
+        binary = binary.reverse + '0' * (bit_length - binary.length)
+      end
+
+      @string = (string + binary).freeze
     end
 
     def to_s
@@ -40,7 +61,7 @@ module IR
 
     def invert
       inverted_string = string.tr('01', '10')
-      self.class.new(inverted_string, endian)
+      Bits.new(inverted_string, endian)
     end
 
     def pretty

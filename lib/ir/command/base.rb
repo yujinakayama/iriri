@@ -30,6 +30,14 @@ module IR
       def parse(_data_bits)
         fail NotImplementedError
       end
+
+      def to_data
+        fail NotImplementedError
+      end
+
+      def pulse_codec
+        self.class.pulse_codec
+      end
     end
   end
 end
