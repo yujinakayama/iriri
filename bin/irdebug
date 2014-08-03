@@ -6,6 +6,7 @@ require 'ir/io_adapter/arduino'
 require 'rainbow/ext/string'
 require 'diff/lcs'
 
+IR::PulseCodec.require_all
 IR::Command.require_all
 
 def run
