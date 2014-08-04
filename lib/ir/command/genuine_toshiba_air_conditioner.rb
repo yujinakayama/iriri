@@ -10,10 +10,11 @@ module IR
     #                                       power/mode
     class GenuineToshibaAirConditioner < Base
       module Mode
-        AUTO = 0
-        COOL = 1
-        DRY  = 2
-        HEAT = 3
+        AUTO      = 0
+        COOL      = 1
+        DRY       = 2
+        HEAT      = 3
+        POWER_OFF = 7
       end
 
       module WindSpeed
@@ -40,8 +41,8 @@ module IR
       end
 
       def initialize
-        self.power = false
         self.mode = Mode::AUTO
+        self.power = false
         self.temperature = (TEMPERATURE_RANGE.begin + TEMPERATURE_RANGE.end) / 2
         self.wind_speed = WindSpeed::AUTO
         self.air_clean = true
@@ -50,8 +51,8 @@ module IR
       def parse(data_bits)
         fail "Invalid data bits: #{data_bits}" unless Validator.valid?(data_bits)
 
-        self.power = (data_bits[37, 1].to_i == 0)
-        self.mode = data_bits[38, 2].to_i
+        self.mode = data_bits[37, 3].to_i
+        self.power = (mode != Mode::POWER_OFF)
         self.temperature = TEMPERATURE_RANGE.begin + data_bits[24, 4].to_i
         self.wind_speed = data_bits[32, 3].to_i
         self.air_clean = (data_bits[43, 1].to_i == 1)
@@ -89,8 +90,8 @@ module IR
         bits << '0000'
         bits.append_integer(wind_speed, 3)
         bits << '00'
-        bits << (power ? '0' : '1')
-        bits.append_integer(mode, 2)
+        power_and_mode = power ? mode : Mode::POWER_OFF
+        bits.append_integer(power_and_mode, 3)
         bits << '000'
         bits << (air_clean ? '1' : '0')
         bits << '0000'
