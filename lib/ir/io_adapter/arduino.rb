@@ -49,10 +49,14 @@ module IR
       def send_pulse(pulse)
         fail 'First signal of pulse must be ON state.' unless pulse.first.on?
 
+        io.write "\r" # Clear buffer
+        io.flush
+
         durations = pulse.map { |signal| signal.duration / DURATION_UNIT_MICROS }
         data = durations.join(',') + "\r"
         data.each_char do |char|
           io.write char
+          io.flush
         end
       end
     end
