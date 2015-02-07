@@ -97,7 +97,7 @@ def highlight_smart_diff(subject, other)
   diffs = Diff::LCS.diff(other, subject)
 
   positions = diffs.map do |diff|
-    diff.map { |change| change.position }
+    diff.map(&:position)
   end.flatten.uniq
 
   highlight_positions(subject, positions)

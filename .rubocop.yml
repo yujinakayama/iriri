@@ -8,6 +8,9 @@ MethodLength:
 CyclomaticComplexity:
   Max: 8
 
+Metrics/AbcSize:
+  Max: 29
+
 AlignHash:
   # Alignment of entries using hash rocket as separator. Valid values are:
   #
@@ -38,4 +41,7 @@ Documentation:
   Enabled: false
 
 AsciiComments:
+  Enabled: false
+
+Style/EmptyElse:
   Enabled: false
