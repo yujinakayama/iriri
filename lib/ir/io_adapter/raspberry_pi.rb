@@ -56,18 +56,20 @@ module IR
         loop do
           changed = input_pin.wait_for_change_with_timeout(PULSE_END_THRESHOLD)
 
-          unless changed
+          if changed
+            current_time = Time.now
+            duration_in_micros = (current_time - last_change_time) * 1_000_000
+            pulse << Signal.new(input_pin.on?, duration_in_micros.to_i)
+
+            last_change_time = current_time
+          elsif pulse.empty?
+            next
+          else
             yield pulse
             pulse = []
             last_change_time = Time.now
             next
           end
-
-          current_time = Time.now
-          duration_in_micros = (current_time - last_change_time) * 1000000
-          pulse << Signal.new(input_pin.on?, duration_in_micros)
-
-          last_change_time = current_time
         end
       end
 
@@ -88,7 +90,14 @@ module IR
       private
 
       def input_pin
-        @input_pin ||= Pin.new(@input_pin_options.merge(direction: :in))
+        @input_pin ||= begin
+          Pin.new(@input_pin_options.merge(direction: :in))
+
+          at_exit do
+            puts 'unexporting pin'
+            File.write('/sys/class/gpio/unexport', @input_pin_options[:pin].to_s)
+          end
+        end
       end
 
       def output_pin
