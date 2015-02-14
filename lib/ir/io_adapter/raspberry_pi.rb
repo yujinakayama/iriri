@@ -51,7 +51,7 @@ module IR
         return to_enum(__method__) unless block_given?
 
         pulse = []
-        last_change_time = Time.now
+        last_change_time = nil
 
         loop do
           changed = input_pin.wait_for_change_with_timeout(PULSE_END_THRESHOLD)
@@ -60,17 +60,19 @@ module IR
             current_time = Time.now
 
             # Ignore blank time since the last pulse
-            if !pulse.empty? || input_pin.on?
+            # if !pulse.empty? || input_pin.on?
               duration_in_micros = (current_time - last_change_time) * 1_000_000
               pulse << Signal.new(input_pin.on?, duration_in_micros.to_i)
-            end
+            # end
 
             last_change_time = current_time
-          elsif pulse.empty?
-            next
           else
-            yield pulse
-            pulse = []
+            if pulse.empty?
+              next
+            else
+              yield pulse
+              pulse = []
+            end
           end
         end
       end
