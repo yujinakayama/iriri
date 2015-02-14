@@ -91,12 +91,12 @@ module IR
 
       def input_pin
         @input_pin ||= begin
-          Pin.new(@input_pin_options.merge(direction: :in))
-
           at_exit do
             puts 'unexporting pin'
             File.write('/sys/class/gpio/unexport', @input_pin_options[:pin].to_s)
           end
+
+          Pin.new(@input_pin_options.merge(direction: :in))
         end
       end
 
