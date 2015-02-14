@@ -25,23 +25,6 @@ module IR
 
       PULSE_END_THRESHOLD = 0.1
 
-      def self.from_found_device
-        device = find_device
-        fail 'No Arduino device file is found.' unless device
-        from_device(device)
-      end
-
-      def self.from_device(device)
-        io = SerialPort.new(device, BAUD_RATE, DATA_BITS, STOP_BITS, PARITY)
-        new(io)
-      end
-
-      def self.find_device
-        Dir.glob('/dev/cu.usbmodem*').first
-      end
-
-      attr_reader :io
-
       def initialize(options)
         @input_pin_options = options[:in]
         @output_pin_options = options[:out]
@@ -51,7 +34,7 @@ module IR
         return to_enum(__method__) unless block_given?
 
         pulse = []
-        last_change_time = nil
+        last_change_time = Time.now
 
         loop do
           changed = input_pin.wait_for_change_with_timeout(PULSE_END_THRESHOLD)
@@ -60,10 +43,14 @@ module IR
             current_time = Time.now
 
             # Ignore blank time since the last pulse
-            # if !pulse.empty? || input_pin.on?
-              duration_in_micros = (current_time - last_change_time) * 1_000_000
+            duration_in_micros = (current_time - last_change_time) * 1_000_000
+
+            if duration_in_micros < 100_000
               pulse << Signal.new(input_pin.on?, duration_in_micros.to_i)
-            # end
+            else
+              yield pulse
+              pulse = []
+            end
 
             last_change_time = current_time
           else
