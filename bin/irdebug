@@ -3,6 +3,7 @@
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
 require 'ir/controller'
 require 'ir/io_adapter/arduino'
+require 'ir/io_adapter/raspberry_pi'
 require 'rainbow/ext/string'
 require 'diff/lcs'
 
@@ -74,7 +75,7 @@ end
 
 def controller
   @controller ||= begin
-    io_adapter = IR::IOAdapter::Arduino.from_found_device
+    io_adapter = IR::IOAdapter::RaspberryPi.new(in: { pin: 17, invert: true })
     IR::Controller.new(io_adapter)
   end
 end
