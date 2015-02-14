@@ -58,8 +58,12 @@ module IR
 
           if changed
             current_time = Time.now
-            duration_in_micros = (current_time - last_change_time) * 1_000_000
-            pulse << Signal.new(input_pin.on?, duration_in_micros.to_i)
+
+            # Ignore blank time since the last pulse
+            if !pulse.empty? || input_pin.on?
+              duration_in_micros = (current_time - last_change_time) * 1_000_000
+              pulse << Signal.new(input_pin.on?, duration_in_micros.to_i)
+            end
 
             last_change_time = current_time
           elsif pulse.empty?
@@ -67,8 +71,6 @@ module IR
           else
             yield pulse
             pulse = []
-            last_change_time = Time.now
-            next
           end
         end
       end
